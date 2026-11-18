@@ -6,17 +6,21 @@ Next.js・Hono・Hono RPC・Prismaを使って、認証と認可を学ぶ教材�
 
 ## 起動する
 
-Node.js 24系とpnpm 10.34.9を使います。初めて準備する場合は、[Node.js・pnpmの導入手順](docs/setup.md#nodejsとpnpmを導入する)を先に進めてください。Windows・macOSの手順、バージョン確認、導入時のエラーへの対処を記載しています。
+Node.jsはfnmで複数バージョンを管理し、この教材では24.22.3とpnpm 10.34.9を使います。[fnmによるNode.jsの切り替えとpnpmの準備](docs/setup.md#nodejsとpnpmを導入する)に、既存のNode.js環境から移行するWindows・macOS向けの手順を記載しています。
 
 ```bash
 git clone https://github.com/hellososhi/web-auth-hands-on.git
 cd web-auth-hands-on
+fnm install
+fnm use
 pnpm install
 pnpm db:setup
 pnpm dev
 ```
 
 [http://localhost:3000](http://localhost:3000) を開きます。
+
+`fnm install` と `fnm use` は、リポジトリの `.node-version` に記録されたNode.jsを導入・選択します。環境準備で自動切り替えを設定すると、このフォルダーへの移動時にも適用されます。
 
 `pnpm db:setup` は次の準備を行います。
 

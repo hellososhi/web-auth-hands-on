@@ -74,102 +74,179 @@ Hono RPCは、APIの入力・出力の型をクライアントで利用するた
 
 ## Node.jsとpnpmを導入する
 
-Node.jsは **24系**、pnpmは **10.34.9** を使います。テンプレートの `.node-version` と `.nvmrc` には、確認に使った **24.22.3** を記録しています。ここではWindows・macOSに初めて導入する手順を説明します。
+**fnm（Fast Node Manager）でNode.jsの複数バージョンを管理します。** Node.jsが既に入っているPCにも追加し、教材では **24.22.3**、別のプロジェクトではそのプロジェクトが指定するバージョンへ切り替えます。
 
-- **Node.js**：JavaScriptで書かれた開発ツールやサーバーを動かす実行環境。
-- **npm**：Node.jsの公式インストーラーに含まれるパッケージ管理ツール。今回はpnpmの導入に使う。
-- **pnpm**：教材のライブラリを導入し、`pnpm dev` などのコマンドを実行するツール。
+- **fnm**：Node.jsのバージョンを追加・切り替えするツール。
+- **Node.js**：JavaScriptで書かれた開発ツールやサーバーの実行環境。
+- **npm**：Node.jsに付属するパッケージ管理ツール。pnpmの導入に使う。
+- **pnpm**：教材の依存関係の導入や、`pnpm dev` などの実行に使う。教材では **10.34.9** にそろえる。
 
-### 1. 既に入っているか確認する
+fnmはWindows・macOS・Linuxで使えます。教材の `.node-version` と `.nvmrc` を読み、作業するプロジェクトに合わせてNode.jsを選べます。以下はWindowsとmacOSの手順です。
 
-Windowsはスタートメニューから「コマンドプロンプト」、macOSは「ターミナル」を開きます。コマンドは1行ずつ入力し、Enterキーで実行します。この導入作業は、リポジトリを取得する前に進められます。
+参考：[fnmの導入とシェル設定][ref-fnm]
 
-```shell
-node --version
-npm --version
-pnpm --version
-```
+### 1. 現在の環境を確認する
 
-`node` が `v24.` で始まり、`npm` のバージョンが表示され、`pnpm` が `10.34.9` なら、[リポジトリの取得](#リポジトリを取得する)へ進めます。「見つからない」「認識されていない」と表示されたツールは、次の手順で導入します。
-
-既にnvm・fnm・VoltaなどでNode.jsを管理している人は、そのツールで24系へ切り替えてください。既存の管理ツールを使い続け、手順3から進めます。
-
-### 2. Node.jsを導入する
-
-**Windows**
-
-1. [Node.js 24.22.3の公式ダウンロードページ][ref-node-download]を開きます。
-2. 「Installer Packages」から、通常のIntel・AMDのPCなら `node-v24.22.3-x64.msi`、Arm版Windowsなら `node-v24.22.3-arm64.msi` を選びます。PCの種類は「設定 → システム → バージョン情報 → システムの種類」で確認できます。
-3. ダウンロードした `.msi` を開き、画面に従ってインストールします。`npm package manager` と `Add to PATH` は有効にします。追加のネイティブビルドツールを自動導入する項目は、初回の準備では選択不要です。
-4. コマンドプロンプトを閉じ、新しく開き直します。VS Codeを使っている場合は、VS Codeも再起動します。
-
-**macOS**
-
-1. [Node.js 24.22.3の公式ダウンロードページ][ref-node-download]を開きます。
-2. 「Installer Packages」から `node-v24.22.3.pkg` を選びます。このインストーラーはApple SiliconとIntelの両方に対応しています。
-3. ダウンロードした `.pkg` を開き、画面に従ってインストールします。
-4. ターミナルを閉じ、新しく開き直します。VS Codeを使っている場合は、VS Codeも再起動します。
-
-導入後、次を実行します。
+Windowsは **PowerShell**、macOSは **ターミナル（zsh）** を開き、現在のバージョンと実行ファイルの場所を控えます。
 
 ```shell
 node --version
+node -p "process.execPath"
+```
+
+既存のNode.jsを残したまま、fnmが管理するNode.jsを追加できます。切り替え後に同じコマンドを実行し、使われるNode.jsが変わったことを確かめます。
+
+既にnvmやVoltaなどでバージョンを管理している場合は、その管理ツールで24.22.3を選べます。その場合は、以降とREADMEにあるfnm用の導入・コマンド・完了条件を省略し、手順4のpnpmの準備を進めます。`node --version`・`npm --version`・`pnpm --version`で指定の環境を確認してから、リポジトリを取得してください。以下はfnmを新しく使う人向けです。
+
+### 2. fnmを導入し、ターミナルに設定する
+
+自分のOSの手順を進めます。設定ファイルは、ターミナルを開いたときにコマンドを読み込むためのものです。
+
+**Windows：PowerShell**
+
+まず `winget --version` を実行します。wingetが見つからない場合は、[Microsoft公式の導入手順][ref-winget]で「アプリ インストーラー」を準備します。
+
+```powershell
+winget install --id Schniz.fnm --exact
+```
+
+導入後はPowerShellを開き直します。VS Codeを使っている場合はVS Codeも再起動し、PowerShellのターミナルを開きます。
+
+```powershell
+fnm --version
+if (-not (Test-Path -Path $PROFILE)) {
+    New-Item -ItemType File -Path $PROFILE -Force | Out-Null
+}
+notepad $PROFILE
+```
+
+開いたファイルの末尾へ、次の1行を追加して保存します。元からある設定は残します。
+
+```powershell
+fnm env --use-on-cd --shell powershell | Out-String | Invoke-Expression
+```
+
+同じ1行を現在のPowerShellでも実行すると、すぐにfnmを使えます。次回からはプロファイルが読み込まれるときに自動で設定されます。プロファイルの実行が拒否される場合は、後述の「導入でつまずいたとき」を参照してください。
+
+**macOS：ターミナル（zsh）**
+
+`brew --version` を実行します。Homebrewが見つからない場合は、[Homebrew公式ページ][ref-homebrew]の導入手順を進め、最後に表示される `Next steps` のPATH設定も実行します。
+
+```sh
+brew install fnm
+fnm --version
+touch "$HOME/.zshrc"
+open -e "$HOME/.zshrc"
+```
+
+開いたファイルの末尾へ、次の1行を追加して保存します。既に同じ行がある場合は、その行を使います。
+
+```sh
+eval "$(fnm env --use-on-cd --shell zsh)"
+```
+
+同じ1行を現在のターミナルでも実行すると、すぐにfnmを使えます。次回からは `.zshrc` の読み込み時に設定されます。PATHを変更する設定がある場合は、その後にfnmの初期化行を置きます。
+
+両OSの `--use-on-cd` は、`cd` で作業フォルダーを変えたとき、そこにあるバージョン指定に合わせてNode.jsを切り替える設定です。
+
+参考：[fnmの自動切り替え][ref-fnm-config]、[PowerShellのプロファイル][ref-powershell-profile]
+
+### 3. 教材のNode.jsを追加して切り替える
+
+ここからは両OSで同じコマンドを使います。
+
+```shell
+fnm install 24.22.3
+fnm use 24.22.3
+fnm current
+node --version
+node -p "process.execPath"
 npm --version
 ```
 
-`node` は `v24.22.3`、`npm` はバージョン番号が表示されれば準備できています。教材のNode.jsの指定は24系です。公式サイトの別のページから取得する場合も、バージョン欄で24系を選んでください。
+`node --version` が `v24.22.3` になり、実行ファイルの場所がfnmの管理先になっていることを確認します。`fnm install` はバージョンの追加、`fnm use` は現在のターミナルで使うバージョンの選択です。
 
-参考：[Node.jsとnpmの導入][ref-npm-install]
+**以前のmacOS向け手順で、npmの導入先を変更した場合**
 
-### 3. pnpmを導入する
+前の教材にあった `npm config set prefix "$HOME/.local"` を実行した人は、次のコマンドで設定先を確認します。
 
-`npm` を使い、教材で使うバージョンを指定して導入します。
+```shell
+npm config get prefix
+npm config get userconfig
+```
+
+`userconfig` で表示されたファイルをVS Codeなどで開き、前の手順で追加した `prefix=/Users/自分の名前/.local` に相当する行だけを削除して保存します。その後、`npm config get prefix` をもう一度実行し、fnmで選択したNode.jsに対応する導入先になったことを確認します。
+
+これは、今後npmでグローバルに導入するツールの保存先を戻す操作です。既に `~/.local` にあるファイルは残ります。`.zshrc` の `~/.local/bin` のPATH設定は他のツールでも使えるため、そのままにし、fnmの初期化を後に置きます。
+
+参考：[npmの設定][ref-npm-config]、[npmのグローバル導入先][ref-npm-folders]
+
+### 4. 切り替えた環境でpnpmを準備する
+
+`pnpm --version` を実行します。見つからない場合や10.34.9以外の場合は、Node.js 24.22.3を選んだ状態で次を実行します。
 
 ```shell
 npm install --global pnpm@10.34.9
 pnpm --version
 ```
 
-`10.34.9` と表示されれば完了です。`--global` は、このPCの複数の作業フォルダーからpnpmコマンドを使えるようにする指定です。
+`10.34.9` と表示されれば完了です。`--global` は、そのnpmのグローバル導入先へpnpmを置く指定です。
 
-この後、教材の依存関係には `pnpm install` を使います。`pnpm-lock.yaml` に記録されたバージョンをそろえるため、教材内のパッケージ管理はpnpmに統一します。
+Node.jsを切り替えた後は、pnpmのバージョンも確認します。グローバル導入先はOSやnpmの設定に依存し、Windowsでは複数のNode.jsから同じpnpmを使う場合があります。macOSでも、`prefix` を固定していれば導入先が共有されます。
+
+教材の依存関係には `pnpm install` を使います。`pnpm-lock.yaml` に記録されたバージョンをそろえるため、教材内のパッケージ管理はpnpmに統一します。
 
 参考：[pnpmの導入（npmを使う方法）][ref-pnpm-install]
 
-### 導入でつまずいたとき
+### 5. 複数バージョンを使い分ける
 
-**`node`・`npm`・`pnpm` が見つからない**
+別のプロジェクトでNode.js 22系が必要になった場合の例です。作業中の開発サーバーを止めてから試します。
 
-ターミナルとVS Codeを開き直して、バージョン確認をやり直します。PATHは、コマンドを探すフォルダーの一覧です。インストールでPATHが更新されても、開いているターミナルには反映されないことがあります。
-
-pnpmだけが見つからない場合は、`npm config get prefix` で導入先を確認します。Windowsではそのフォルダー、macOSではその中の `bin` が、コマンドを探す対象になります。別のNode.jsが表示される場合は、Windowsでは `where.exe node`、macOSでは `which node` で実行しているファイルの場所を確認してください。
-
-**WindowsのPowerShellで「スクリプトの実行が無効」と表示される**
-
-コマンドプロンプトで同じ手順を実行できます。PowerShellを続けて使う場合は、`npm.cmd install --global pnpm@10.34.9`、`pnpm.cmd --version` のように `.cmd` を付けて実行します。教材の `pnpm dev` なども `pnpm.cmd dev` と書けます。
-
-**macOSでpnpmの導入時に `EACCES` と表示される**
-
-公式の `.pkg` でNode.jsを導入した場合は、npmのグローバル導入先への書き込み権限が原因になることがあります。自分のホームフォルダー内へ導入先を変更します。次はmacOSの標準シェルであるzsh向けの手順です。
-
-```sh
-npm config set prefix "$HOME/.local"
-mkdir -p "$HOME/.local/bin"
-printf '\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$HOME/.zshrc"
-export PATH="$HOME/.local/bin:$PATH"
-npm install --global pnpm@10.34.9
-pnpm --version
+```shell
+fnm install 22
+fnm use 22
+node --version
+fnm list
+fnm use 24.22.3
 ```
 
-最初の行は、今後npmでグローバルに導入するツールの保存先も変更します。`.zshrc` への追記で、新しく開くターミナルでもその場所を参照できます。この設定は一度行えば使い続けられます。既にNode.jsのバージョン管理ツールを使っている場合は、そのツールの設定で導入先を確認してください。
+`fnm list` で、fnmが管理するバージョンを一覧できます。`fnm use` の切り替えは、そのターミナルに対して行います。既に起動しているサーバーへ反映するには、切り替え後にサーバーを再起動します。
 
-参考：[npmの権限エラーへの対処][ref-npm-permissions]
+新しいターミナルで使う標準バージョンは `fnm default` で指定します。例えば、普段は22系を使う場合は `fnm default 22` とします。標準バージョンの設定と、プロジェクトの `.node-version` による指定は別の役割です。
+
+導入前に使っていたバージョンを標準にしたい場合は、手順1で控えた番号を `fnm install` と `fnm default` に指定します。
+
+参考：[fnmのコマンド][ref-fnm-commands]
+
+### 導入でつまずいたとき
+
+**`fnm` が見つからない／Node.jsが切り替わらない**
+
+ターミナルとVS Codeを開き直し、手順2の初期化行をそのターミナルで実行してから `fnm use 24.22.3` を試します。`node -p "process.execPath"` で、実行されるNode.jsを確認します。
+
+Windowsでは `Get-Command node,npm,pnpm -All`、macOSでは `type -a node npm pnpm` で候補の場所を調べられます。PATHは、コマンドを探すフォルダーの一覧です。他のNode.js管理ツールの初期化が後から実行されると選択が変わるため、このターミナルではfnmの初期化を使う設定にそろえます。
+
+**PowerShellでプロファイルの実行が拒否される**
+
+その場合は、ターミナルを開くたびに次の初期化行を直接実行してから作業します。そのターミナル内では、フォルダー移動時の切り替えも使えます。
+
+```powershell
+fnm env --use-on-cd --shell powershell | Out-String | Invoke-Expression
+```
+
+`npm.ps1` や `pnpm.ps1` の実行が拒否される場合は、`npm.cmd install --global pnpm@10.34.9`、`pnpm.cmd --version`、`pnpm.cmd dev` のように `.cmd` を付けます。
+
+**pnpmが見つからない／別のバージョンが動く／権限エラーになる**
+
+`fnm current`、`node -p "process.execPath"`、`npm config get prefix` を確認します。古いNode.jsの実行先や、以前固定したnpmの導入先が残っている場合は、手順2・3の設定を確認してからpnpmを導入し直します。
 
 ### 導入の完了条件
 
-- [ ] `node --version` が `v24.` で始まる。
+- [ ] `fnm list` で24.22.3を確認できる。
+- [ ] `fnm current` と `node --version` が24.22.3を示す。
+- [ ] `node -p "process.execPath"` がfnmの管理先を示す。
 - [ ] `npm --version` がバージョン番号を返す。
-- [ ] `pnpm --version` が `10.34.9` を返す。
+- [ ] `pnpm --version` が10.34.9を返す。
 
 ## リポジトリを取得する
 
@@ -180,9 +257,18 @@ Next.jsは16.4.6、Honoは4.13.19、Prismaは7.10.1に固定しています。�
 ```bash
 git clone https://github.com/hellososhi/web-auth-hands-on.git
 cd web-auth-hands-on
+fnm install
+fnm use
+node --version
 ```
 
 以後のコマンドは、`package.json` があるリポジトリのルートで実行します。
+
+バージョンを省略した `fnm install` と `fnm use` は、リポジトリにある `.node-version` を読み、24.22.3を導入・選択します。`.nvmrc` も同じ番号にそろえています。これらは、プロジェクトで使うバージョンを共有するためのファイルです。
+
+手順2の自動切り替えを設定したターミナルでは、次回から `cd` でこのフォルダーへ移動すると、導入済みの24.22.3が選ばれます。バージョン指定ファイルを置くだけで切り替わる仕組みではなく、fnmの初期化がこの動作を担当します。
+
+`node --version` が `v24.22.3`、`pnpm --version` が `10.34.9` であることを確認して、アプリを起動します。
 
 ## 起動する
 
@@ -253,7 +339,12 @@ pnpm dev
 
 [ref-hono-next]: https://hono.dev/docs/getting-started/nextjs
 [ref-hono-rpc]: https://hono.dev/docs/guides/rpc
-[ref-node-download]: https://nodejs.org/en/download/archive/v24.22.3
-[ref-npm-install]: https://docs.npmjs.com/downloading-and-installing-node-js-and-npm/
 [ref-pnpm-install]: https://pnpm.io/10.x/installation#using-npm
-[ref-npm-permissions]: https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally/
+[ref-fnm]: https://github.com/Schniz/fnm
+[ref-fnm-config]: https://github.com/Schniz/fnm/blob/master/docs/configuration.md
+[ref-fnm-commands]: https://github.com/Schniz/fnm/blob/master/docs/commands.md
+[ref-homebrew]: https://brew.sh/
+[ref-winget]: https://learn.microsoft.com/en-us/windows/package-manager/winget/
+[ref-powershell-profile]: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_profiles
+[ref-npm-config]: https://docs.npmjs.com/cli/v11/commands/npm-config/
+[ref-npm-folders]: https://docs.npmjs.com/cli/v11/configuring-npm/folders/
