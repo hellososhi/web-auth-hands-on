@@ -6,7 +6,7 @@ Next.js・Hono・Hono RPC・Prismaを使って、認証と認可を学ぶ教材�
 
 ## 起動する
 
-Node.js 24系とpnpm 10.34.9を使います。pnpmの準備がまだの場合は、Node.jsの導入後に `npm install --global pnpm@10.34.9` でインストールできます。
+Node.js 24系とpnpm 10.34.9を使います。初めて準備する場合は、[Node.js・pnpmの導入手順](docs/setup.md#nodejsとpnpmを導入する)を先に進めてください。Windows・macOSの手順、バージョン確認、導入時のエラーへの対処を記載しています。
 
 ```bash
 git clone https://github.com/hellososhi/web-auth-hands-on.git
