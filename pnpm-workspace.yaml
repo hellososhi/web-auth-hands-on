@@ -1,0 +1,7 @@
+onlyBuiltDependencies:
+  - '@prisma/engines'
+  - argon2
+  - better-sqlite3
+  - esbuild
+  - prisma
+  - sharp
